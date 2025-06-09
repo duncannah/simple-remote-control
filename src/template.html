@@ -1,19 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>simple-remote-control</title>
-		<link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" media="screen" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
+			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap"
 			rel="stylesheet"
-			href="https://unpkg.com/sakura.css/css/sakura-dark.css"
-			media="screen and (prefers-color-scheme: dark)"
 		/>
+		<style>
+			:root {
+				color-scheme: dark light;
+
+				--primary: #bc13fe;
+				--primary-contrast: #ffffff;
+			}
+
+			body {
+				font-family: "JetBrains Mono", monospace;
+				text-rendering: geometricPrecision;
+				margin: 0;
+				padding: 20px;
+			}
+
+			.container {
+				max-width: 600px;
+				margin: auto;
+				padding: 20px;
+			}
+
+			h1 {
+				text-transform: uppercase;
+			}
+
+			code {
+				background-color: canvastext;
+				color: canvas;
+				padding: 2px 4px;
+			}
+
+			fieldset {
+				margin: 0;
+			}
+
+			button,
+			input[type="button"],
+			input[type="submit"] {
+				font: inherit;
+				background-color: canvas;
+				color: canvastext;
+				border: solid 0.15em canvastext;
+				padding: 0.5em 1em;
+
+				&:hover,
+				&:focus {
+					background-color: var(--primary);
+					color: var(--primary-contrast);
+				}
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Simple Remote Control</h1>
-		<code>{{hostname}}</code>
-		{{content}}
+		<main class="container">
+			<h1>Simple Remote Control</h1>
+			<p>Running on <code>{{hostname}}</code></p>
+			{{content}}
+		</main>
 	</body>
 </html>

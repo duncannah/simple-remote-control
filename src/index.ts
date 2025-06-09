@@ -44,10 +44,14 @@ const server = Bun.serve({
 				const action = formData.get("action") as string;
 
 				if (action === "shutdown") {
-					$`shutdown -h now`;
+					$`shutdown -h now`.catch((err) => {
+						console.error("Shutdown command failed:", err);
+					});
 					return htmlResponse("<blockquote>Server is shutting down...</blockquote>");
 				} else if (action === "reboot") {
-					$`reboot`;
+					$`reboot`.catch((err) => {
+						console.error("Reboot command failed:", err);
+					});
 					return htmlResponse("<blockquote>Server is rebooting...</blockquote>");
 				} else {
 					return htmlResponse(
