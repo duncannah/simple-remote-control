@@ -1,0 +1,6 @@
+.stfolder
+.stignore
+.DS_Store
+
+/simple-remote-control
+*.o
