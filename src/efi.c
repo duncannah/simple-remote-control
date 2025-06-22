@@ -29,7 +29,6 @@ void get_boot_order(struct boot_order *order) {
 
 	FILE *fp = popen("efibootmgr", "r");
 	if (!fp) {
-		perror("popen");
 		return;
 	}
 

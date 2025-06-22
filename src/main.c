@@ -31,6 +31,12 @@ struct boot_item *find_boot_item(const char *id) {
 void load_boot_picker_html() {
 	get_boot_order(&boot_order);
 
+	if (boot_order.item_count == 0) {
+		boot_picker_html = realloc(boot_picker_html, 1);
+		boot_picker_html[0] = '\0';
+		return;
+	}
+
 	char start[] =
 		"<form method=\"POST\">"
 		"<fieldset>"
