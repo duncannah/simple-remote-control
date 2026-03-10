@@ -16,6 +16,50 @@ With `efibootmgr` integration, you can also change the boot order of your system
     - The program requires root privileges to access system commands like shutdown and reboot.
 3. The program will start a web server on the specified port for all interfaces.
 
+## Nix / Flake
+
+This repository includes a `flake.nix` with:
+
+- `packages.<system>.default`: build the `simple-remote-control` binary
+- `apps.<system>.default`: run the binary via `nix run`
+- `devShells.<system>.default`: C development shell (`gcc`, `gnumake`, `efibootmgr`)
+- `nixosModules.default`: declarative NixOS service module
+
+### Build and run
+
+```bash
+# Build package
+nix build .#default
+
+# Run app (root required by program functionality)
+sudo nix run .#default -- 3000
+```
+
+### Development shell
+
+```bash
+nix develop
+make
+```
+
+### NixOS module
+
+Enable the module in your NixOS config:
+
+```nix
+{
+  imports = [
+    inputs.simple-remote-control.nixosModules.default
+  ];
+
+  services.simple-remote-control = {
+    enable = true;
+    port = 3000;
+    openFirewall = true;
+  };
+}
+```
+
 ## Running as a service
 
 On a systemd system, using a service file is possible to run this program as a service.
