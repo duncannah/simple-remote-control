@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Simple Remote Control</title>
+		<style>
+			:root {
+				--bg: #f5f5f7;
+				--panel: #ffffff;
+				--text: #222;
+				--muted: #666;
+				--ok-bg: #e8f7ec;
+				--ok-fg: #135727;
+				--err-bg: #fdebea;
+				--err-fg: #7f1d1d;
+				--border: #e3e3e8;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				font-family: sans-serif;
+				background: var(--bg);
+				color: var(--text);
+				padding: 1rem;
+			}
+
+			main {
+				max-width: 900px;
+				margin: 0 auto;
+				display: grid;
+				gap: 1rem;
+			}
+
+			.panel {
+				background: var(--panel);
+				border: 1px solid var(--border);
+				border-radius: 10px;
+				padding: 1rem;
+			}
+
+			.flash {
+				padding: 0.75rem 1rem;
+				border-radius: 8px;
+				margin-bottom: 0.75rem;
+				font-size: 0.95rem;
+				white-space: pre-wrap;
+				word-break: break-word;
+			}
+
+			.flash.ok {
+				background: var(--ok-bg);
+				color: var(--ok-fg);
+			}
+
+			.flash.error {
+				background: var(--err-bg);
+				color: var(--err-fg);
+			}
+
+			h1 {
+				margin: 0;
+				font-size: 1.4rem;
+			}
+
+			h2 {
+				margin: 0 0 0.75rem;
+				font-size: 1.1rem;
+			}
+
+			p {
+				margin: 0;
+				color: var(--muted);
+			}
+
+			.commands {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 0.5rem;
+			}
+
+			button {
+				border: 1px solid #c9c9d3;
+				border-radius: 8px;
+				background: #f9f9fb;
+				color: #111;
+				padding: 0.6rem 0.9rem;
+				cursor: pointer;
+				font-size: 0.95rem;
+			}
+
+			button:hover {
+				background: #efeff6;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<section class="panel">
+				<h1>Simple Remote Control</h1>
+				<p>Click a button to execute a configured command.</p>
+			</section>
+
+			{{if .Message}}
+			<section class="panel">
+				<div class="flash {{.Level}}">{{.Message}}</div>
+			</section>
+			{{end}} {{range .Categories}}
+			<section class="panel">
+				<h2>{{.Name}}</h2>
+				<div class="commands">
+					{{range .Commands}}
+					<form method="POST" action="/run">
+						<input type="hidden" name="id" value="{{.ID}}" />
+						<button type="submit">{{.Label}}</button>
+					</form>
+					{{end}}
+				</div>
+			</section>
+			{{end}}
+		</main>
+	</body>
+</html>
