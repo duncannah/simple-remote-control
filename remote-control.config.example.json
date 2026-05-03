@@ -1,0 +1,55 @@
+{
+  "deviceName": "Gaming PC",
+  "desktopTarget": "graphical-session.target",
+  "commandTimeoutMs": 12000,
+  "kscreenUser": "duncan",
+  "kscreenEnv": {
+    "DISPLAY": ":0",
+    "XDG_RUNTIME_DIR": "/run/user/1000",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus"
+  },
+  "displayProfiles": [
+    {
+      "id": "monitor",
+      "label": "Monitor",
+      "description": "Desk monitor",
+      "icon": "monitor",
+      "accent": "blue",
+      "primaryOutput": "DP-1",
+      "commandArgs": [
+        "output.DP-1.enable",
+        "output.DP-1.primary",
+        "output.HDMI-A-1.disable",
+        "output.Virtual-1.disable"
+      ]
+    },
+    {
+      "id": "tv",
+      "label": "TV",
+      "description": "Living room TV",
+      "icon": "tv",
+      "accent": "gray",
+      "primaryOutput": "HDMI-A-1",
+      "commandArgs": [
+        "output.HDMI-A-1.enable",
+        "output.HDMI-A-1.primary",
+        "output.DP-1.disable",
+        "output.Virtual-1.disable"
+      ]
+    },
+    {
+      "id": "virtual",
+      "label": "Virtual Display",
+      "description": "Virtual session",
+      "icon": "cloud",
+      "accent": "gray",
+      "primaryOutput": "Virtual-1",
+      "commandArgs": [
+        "output.Virtual-1.enable",
+        "output.Virtual-1.primary",
+        "output.DP-1.disable",
+        "output.HDMI-A-1.disable"
+      ]
+    }
+  ]
+}
