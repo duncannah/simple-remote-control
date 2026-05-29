@@ -74,7 +74,7 @@ export class ControlService {
       return virtualFailure(`Unknown display profile: ${profileId}`);
     }
 
-    const result = await this.kscreen(profile.commandArgs);
+    const result = await this.displayCommand(profile.commandArgs);
     addActivity({
       kind: "display",
       label: `Display: ${profile.label}`,
@@ -171,7 +171,7 @@ export class ControlService {
   }
 
   private async displayStatus(warnings: string[]): Promise<DisplayStatus> {
-    const result = await this.kscreen(["--outputs"]);
+    const result = await this.displayStatusCommand();
     if (!result.ok) {
       warnings.push(`Display status: ${summarizeResult(result)}`);
       return {
@@ -180,17 +180,11 @@ export class ControlService {
       };
     }
 
-    const outputs = parseKscreenOutputs(result.stdout);
-    const primaryOutput = outputs.find((output) => output.enabled && output.primary);
-    const activeProfile = primaryOutput
-      ? this.config.displayProfiles.find((profile) =>
-          outputMatches(primaryOutput, profile.primaryOutput)
-        )
-      : undefined;
+    const activeProfileId = this.activeDisplayProfileId(result.stdout);
 
     return {
       profiles: this.config.displayProfiles,
-      activeProfileId: activeProfile?.id,
+      activeProfileId,
       raw: result.stdout
     };
   }
@@ -221,6 +215,69 @@ export class ControlService {
       timeoutMs: this.config.commandTimeoutMs,
       dryRun: this.config.dryRun
     });
+  }
+
+  private async displayCommand(args: string[]): Promise<CommandResult> {
+    if (this.config.displayCommand) {
+      return this.runDisplayCommand(args);
+    }
+
+    return this.kscreen(args);
+  }
+
+  private async displayStatusCommand(): Promise<CommandResult> {
+    if (this.config.displayCommand) {
+      return this.runDisplayCommand(this.config.displayCommand.statusArgs);
+    }
+
+    return this.kscreen(["--outputs"]);
+  }
+
+  private async runDisplayCommand(args: string[]): Promise<CommandResult> {
+    const command = this.config.displayCommand;
+    if (!command) {
+      return virtualFailure("No display command configured.");
+    }
+
+    const commandArgs = [...command.args, ...args];
+    if (command.user) {
+      return runCommand(
+        "runuser",
+        ["--preserve-environment", "-u", command.user, "--", command.binary, ...commandArgs],
+        {
+          timeoutMs: this.config.commandTimeoutMs,
+          dryRun: this.config.dryRun,
+          env: command.env
+        }
+      );
+    }
+
+    return runCommand(command.binary, commandArgs, {
+      timeoutMs: this.config.commandTimeoutMs,
+      dryRun: this.config.dryRun,
+      env: command.env
+    });
+  }
+
+  private activeDisplayProfileId(stdout: string): string | undefined {
+    if (this.config.displayCommand?.statusFormat === "profile-id") {
+      const profileId = stdout.trim().split(/\s+/)[0];
+      return this.config.displayProfiles.some((profile) => profile.id === profileId)
+        ? profileId
+        : undefined;
+    }
+
+    if (this.config.displayCommand && this.config.displayCommand.statusFormat !== "kscreen") {
+      return undefined;
+    }
+
+    const outputs = parseKscreenOutputs(stdout);
+    const primaryOutput = outputs.find((output) => output.enabled && output.primary);
+    return primaryOutput
+      ? this.config.displayProfiles.find((profile) =>
+          outputMatches(primaryOutput, profile.primaryOutput)
+        )?.id
+      : undefined;
   }
 
   private async kscreen(args: string[]): Promise<CommandResult> {

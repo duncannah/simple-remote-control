@@ -2,6 +2,15 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { DisplayProfile } from "../shared/types";
 
+export interface DisplayCommandConfig {
+  binary: string;
+  args: string[];
+  user?: string;
+  env: Record<string, string>;
+  statusArgs: string[];
+  statusFormat: "kscreen" | "profile-id" | "raw";
+}
+
 export interface AppConfig {
   port: number;
   host: string;
@@ -11,6 +20,7 @@ export interface AppConfig {
   dryRun: boolean;
   kscreenUser?: string;
   kscreenEnv: Record<string, string>;
+  displayCommand?: DisplayCommandConfig;
   displayProfiles: DisplayProfile[];
 }
 
@@ -23,6 +33,7 @@ interface RawConfig {
   dryRun?: boolean;
   kscreenUser?: string;
   kscreenEnv?: Record<string, string>;
+  displayCommand?: Partial<DisplayCommandConfig>;
   displayProfiles?: DisplayProfile[];
 }
 
@@ -92,6 +103,7 @@ export function loadConfig(): AppConfig {
       fileConfig.dryRun === true,
     kscreenUser: process.env.SRC_KSCREEN_USER ?? fileConfig.kscreenUser,
     kscreenEnv: parseEnvJson(process.env.SRC_KSCREEN_ENV) ?? fileConfig.kscreenEnv ?? {},
+    displayCommand: normalizeDisplayCommand(fileConfig.displayCommand),
     displayProfiles: normalizeProfiles(fileConfig.displayProfiles ?? defaultDisplayProfiles)
   };
 }
@@ -136,4 +148,21 @@ function normalizeProfiles(profiles: DisplayProfile[]): DisplayProfile[] {
       icon: profile.icon ?? "monitor",
       accent: profile.accent ?? "gray"
     }));
+}
+
+function normalizeDisplayCommand(
+  command: Partial<DisplayCommandConfig> | undefined
+): DisplayCommandConfig | undefined {
+  if (!command?.binary) {
+    return undefined;
+  }
+
+  return {
+    binary: command.binary,
+    args: command.args ?? [],
+    user: command.user,
+    env: command.env ?? {},
+    statusArgs: command.statusArgs ?? ["--outputs"],
+    statusFormat: command.statusFormat ?? "raw"
+  };
 }

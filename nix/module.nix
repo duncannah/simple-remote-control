@@ -34,6 +34,7 @@ let
       desktopTarget
       deviceName
       displayProfiles
+      displayCommand
       dryRun
       host
       kscreenEnv
@@ -42,9 +43,7 @@ let
       ;
   };
 
-  configFile = pkgs.writeText "simple-remote-control-config.json" (
-    builtins.toJSON generatedConfig
-  );
+  configFile = pkgs.writeText "simple-remote-control-config.json" (builtins.toJSON generatedConfig);
 in
 {
   options.services.simple-remote-control = {
@@ -210,6 +209,50 @@ in
         }
       ];
       description = "Display output profiles exposed in the frontend.";
+    };
+
+    displayCommand = mkOption {
+      type = types.nullOr (
+        types.submodule {
+          options = {
+            binary = mkOption {
+              type = types.str;
+              description = "Display command binary to run instead of kscreen-doctor.";
+            };
+            args = mkOption {
+              type = types.listOf types.str;
+              default = [ ];
+              description = "Base arguments passed before profile or status arguments.";
+            };
+            user = mkOption {
+              type = types.nullOr types.str;
+              default = null;
+              description = "User to run the display command as. Leave null to run as root.";
+            };
+            env = mkOption {
+              type = types.attrsOf types.str;
+              default = { };
+              description = "Environment passed to the display command.";
+            };
+            statusArgs = mkOption {
+              type = types.listOf types.str;
+              default = [ "--outputs" ];
+              description = "Arguments used to query display status.";
+            };
+            statusFormat = mkOption {
+              type = types.enum [
+                "kscreen"
+                "profile-id"
+                "raw"
+              ];
+              default = "raw";
+              description = "How to parse display status stdout.";
+            };
+          };
+        }
+      );
+      default = null;
+      description = "Generic display command backend. When unset, kscreen-doctor is used.";
     };
   };
 
