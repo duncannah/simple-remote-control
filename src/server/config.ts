@@ -2,6 +2,17 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { DisplayProfile } from "../shared/types";
 
+export interface BooleanControlConfig {
+  id: string;
+  label: string;
+  description?: string;
+  binary: string;
+  args: string[];
+  statusArgs: string[];
+  enableArgs: string[];
+  disableArgs: string[];
+}
+
 export interface DisplayCommandConfig {
   binary: string;
   args: string[];
@@ -22,6 +33,7 @@ export interface AppConfig {
   kscreenEnv: Record<string, string>;
   displayCommand?: DisplayCommandConfig;
   displayProfiles: DisplayProfile[];
+  booleanControls: BooleanControlConfig[];
 }
 
 interface RawConfig {
@@ -35,6 +47,7 @@ interface RawConfig {
   kscreenEnv?: Record<string, string>;
   displayCommand?: Partial<DisplayCommandConfig>;
   displayProfiles?: DisplayProfile[];
+  booleanControls?: BooleanControlConfig[];
 }
 
 const defaultDisplayProfiles: DisplayProfile[] = [
@@ -104,7 +117,8 @@ export function loadConfig(): AppConfig {
     kscreenUser: process.env.SRC_KSCREEN_USER ?? fileConfig.kscreenUser,
     kscreenEnv: parseEnvJson(process.env.SRC_KSCREEN_ENV) ?? fileConfig.kscreenEnv ?? {},
     displayCommand: normalizeDisplayCommand(fileConfig.displayCommand),
-    displayProfiles: normalizeProfiles(fileConfig.displayProfiles ?? defaultDisplayProfiles)
+    displayProfiles: normalizeProfiles(fileConfig.displayProfiles ?? defaultDisplayProfiles),
+    booleanControls: fileConfig.booleanControls ?? []
   };
 }
 

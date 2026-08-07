@@ -2,6 +2,7 @@ import type {
   ActivityEvent,
   BootEntry,
   BootStatus,
+  BooleanControlStatus,
   CommandResult,
   ControlStatus,
   DesktopStatus,
@@ -26,8 +27,9 @@ export class ControlService {
 
   async status(): Promise<ControlStatus> {
     const warnings: string[] = [];
-    const [desktop, display, boot] = await Promise.all([
+    const [desktop, booleanControls, display, boot] = await Promise.all([
       this.desktopStatus(warnings),
+      this.booleanControlStatuses(warnings),
       this.displayStatus(warnings),
       this.bootStatus(warnings)
     ]);
@@ -46,6 +48,7 @@ export class ControlService {
       platform: process.platform,
       isRoot: typeof process.getuid === "function" ? process.getuid() === 0 : false,
       desktop,
+      booleanControls,
       display,
       boot,
       generatedAt: new Date().toISOString(),
@@ -78,6 +81,30 @@ export class ControlService {
     addActivity({
       kind: "display",
       label: `Display: ${profile.label}`,
+      ok: result.ok,
+      command: result.command,
+      detail: summarizeResult(result)
+    });
+    return result;
+  }
+
+  async setBooleanControl(controlId: string, enabled: boolean): Promise<CommandResult> {
+    const control = this.config.booleanControls.find((candidate) => candidate.id === controlId);
+    if (!control) {
+      return virtualFailure(`Unknown boolean control: ${controlId}`);
+    }
+
+    const result = await runCommand(
+      control.binary,
+      [...control.args, ...(enabled ? control.enableArgs : control.disableArgs)],
+      {
+        timeoutMs: this.config.commandTimeoutMs,
+        dryRun: this.config.dryRun
+      }
+    );
+    addActivity({
+      kind: "control",
+      label: `${control.label}: ${enabled ? "on" : "off"}`,
       ok: result.ok,
       command: result.command,
       detail: summarizeResult(result)
@@ -168,6 +195,26 @@ export class ControlService {
       state: result.stdout === "active" ? "on" : result.stdout ? "off" : "unknown",
       raw
     };
+  }
+
+  private async booleanControlStatuses(warnings: string[]): Promise<BooleanControlStatus[]> {
+    return Promise.all(
+      this.config.booleanControls.map(async (control) => {
+        const result = await runCommand(control.binary, [...control.args, ...control.statusArgs], {
+          timeoutMs: this.config.commandTimeoutMs,
+          dryRun: this.config.dryRun
+        });
+        if (!result.ok && result.code !== 1) {
+          warnings.push(`${control.label} status: ${summarizeResult(result)}`);
+        }
+        return {
+          id: control.id,
+          label: control.label,
+          description: control.description,
+          state: result.ok ? "on" : result.code === 1 ? "off" : "unknown"
+        };
+      })
+    );
   }
 
   private async displayStatus(warnings: string[]): Promise<DisplayStatus> {

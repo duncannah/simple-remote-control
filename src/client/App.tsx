@@ -42,6 +42,7 @@ const initialStatus: ControlStatus = {
     state: "unknown",
     raw: ""
   },
+  booleanControls: [],
   display: {
     profiles: [],
     raw: ""
@@ -176,6 +177,34 @@ export function App() {
                 </span>
               </div>
             </section>
+
+            {status.booleanControls.map((control) => {
+              const enabled = control.state === "on";
+              return (
+                <section className="control-panel accent-purple" key={control.id}>
+                  <PanelTitle
+                    icon={<Zap />}
+                    title={control.label}
+                    subtitle={control.description ?? "Toggle this control"}
+                  >
+                    <button
+                      className={`switch ${enabled ? "enabled" : ""}`}
+                      type="button"
+                      aria-pressed={enabled}
+                      aria-label={`Toggle ${control.label}`}
+                      disabled={busy !== null || control.state === "unknown"}
+                      onClick={() =>
+                        runMutation(`control:${control.id}`, () =>
+                          api.setBooleanControl(control.id, !enabled)
+                        )
+                      }
+                    >
+                      <span />
+                    </button>
+                  </PanelTitle>
+                </section>
+              );
+            })}
 
             <section className="control-panel accent-blue">
               <PanelTitle

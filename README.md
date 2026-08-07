@@ -25,6 +25,7 @@ The flake only depends on `nixpkgs`; it does not use `flake-utils` or similar he
       system = "x86_64-linux";
       modules = [
         simple-remote-control.nixosModules.default
+        { pkgs, ... }:
         {
           services.simple-remote-control = {
             enable = true;
@@ -37,6 +38,17 @@ The flake only depends on `nixpkgs`; it does not use `flake-utils` or similar he
               XDG_RUNTIME_DIR = "/run/user/1000";
               DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/user/1000/bus";
             };
+            booleanControls = [
+              {
+                id = "example-service";
+                label = "Example Service";
+                description = "Enable or disable the example service";
+                binary = "${pkgs.systemd}/bin/systemctl";
+                statusArgs = [ "is-active" "--quiet" "example.service" ];
+                enableArgs = [ "start" "example.service" ];
+                disableArgs = [ "stop" "example.service" ];
+              }
+            ];
             displayProfiles = [
               {
                 id = "monitor";
@@ -98,6 +110,7 @@ An example systemd unit is available at `deploy/simple-remote-control.service`. 
 - `GET /api/status`
 - `GET /api/activity`
 - `POST /api/desktop` with `{ "enabled": true }`
+- `POST /api/control/<id>` with `{ "enabled": true }`
 - `POST /api/display` with `{ "profileId": "monitor" }`
 - `POST /api/system` with `{ "action": "reboot" }` or `{ "action": "shutdown" }`
 - `POST /api/boot/next` with `{ "bootId": "0001", "reboot": true }`

@@ -33,6 +33,23 @@ app.post("/api/desktop", async (c) => {
   );
 });
 
+app.post("/api/control/:id", async (c) => {
+  const body = await c.req.json().catch(() => undefined);
+  if (!body || typeof body.enabled !== "boolean") {
+    return c.json<ApiMessage>({ ok: false, message: "Body must include enabled." }, 400);
+  }
+
+  const result = await service.setBooleanControl(c.req.param("id"), body.enabled);
+  return c.json<ApiMessage>(
+    {
+      ok: result.ok,
+      message: result.ok ? "Control updated." : result.stderr || "Command failed.",
+      status: await service.status()
+    },
+    result.ok ? 200 : 500
+  );
+});
+
 app.post("/api/display", async (c) => {
   const body = await c.req.json().catch(() => undefined);
   if (!body || typeof body.profileId !== "string") {

@@ -31,6 +31,7 @@ let
   generatedConfig = cleanNulls {
     inherit (cfg)
       commandTimeoutMs
+      booleanControls
       desktopTarget
       deviceName
       displayProfiles
@@ -126,6 +127,51 @@ in
       type = types.attrsOf types.str;
       default = { };
       description = "Extra environment variables for the systemd service.";
+    };
+
+    booleanControls = mkOption {
+      type = types.listOf (
+        types.submodule {
+          options = {
+            id = mkOption {
+              type = types.str;
+              description = "Stable identifier used by the control API.";
+            };
+            label = mkOption {
+              type = types.str;
+              description = "Label shown in the frontend.";
+            };
+            description = mkOption {
+              type = types.nullOr types.str;
+              default = null;
+              description = "Optional description shown below the label.";
+            };
+            binary = mkOption {
+              type = types.str;
+              description = "Absolute path of the command used by this control.";
+            };
+            args = mkOption {
+              type = types.listOf types.str;
+              default = [ ];
+              description = "Arguments passed before the action-specific arguments.";
+            };
+            statusArgs = mkOption {
+              type = types.listOf types.str;
+              description = "Arguments that exit zero when the control is enabled and one when disabled.";
+            };
+            enableArgs = mkOption {
+              type = types.listOf types.str;
+              description = "Arguments that enable the control.";
+            };
+            disableArgs = mkOption {
+              type = types.listOf types.str;
+              description = "Arguments that disable the control.";
+            };
+          };
+        }
+      );
+      default = [ ];
+      description = "Arbitrary boolean controls exposed in the frontend.";
     };
 
     displayProfiles = mkOption {

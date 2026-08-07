@@ -37,6 +37,13 @@ export interface DisplayStatus {
   raw: string;
 }
 
+export interface BooleanControlStatus {
+  id: string;
+  label: string;
+  description?: string;
+  state: PowerState;
+}
+
 export interface BootStatus {
   entries: BootEntry[];
   currentId?: string;
@@ -51,6 +58,7 @@ export interface ControlStatus {
   platform: string;
   isRoot: boolean;
   desktop: DesktopStatus;
+  booleanControls: BooleanControlStatus[];
   display: DisplayStatus;
   boot: BootStatus;
   generatedAt: string;
@@ -60,7 +68,7 @@ export interface ControlStatus {
 export interface ActivityEvent {
   id: string;
   at: string;
-  kind: "desktop" | "display" | "system" | "boot" | "status";
+  kind: "desktop" | "control" | "display" | "system" | "boot" | "status";
   label: string;
   ok: boolean;
   command: string;

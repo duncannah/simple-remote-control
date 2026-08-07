@@ -29,6 +29,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ enabled })
     }),
+  setBooleanControl: (controlId: string, enabled: boolean) =>
+    request<ApiMessage>(`/api/control/${encodeURIComponent(controlId)}`, {
+      method: "POST",
+      body: JSON.stringify({ enabled })
+    }),
   setDisplay: (profileId: string) =>
     request<ApiMessage>("/api/display", {
       method: "POST",
