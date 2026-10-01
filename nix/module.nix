@@ -30,6 +30,7 @@ let
 
   generatedConfig = cleanNulls {
     inherit (cfg)
+      basePath
       commandTimeoutMs
       booleanControls
       desktopTarget
@@ -55,6 +56,12 @@ in
       default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
       defaultText = literalExpression "simple-remote-control.packages.\${system}.default";
       description = "Package to run for the remote control service.";
+    };
+
+    basePath = mkOption {
+      type = types.str;
+      default = "/";
+      description = "Public URL path prefix. The reverse proxy must strip this prefix before forwarding requests.";
     };
 
     host = mkOption {

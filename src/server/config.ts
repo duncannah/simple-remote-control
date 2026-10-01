@@ -25,6 +25,7 @@ export interface DisplayCommandConfig {
 export interface AppConfig {
   port: number;
   host: string;
+  basePath: string;
   deviceName: string;
   desktopTarget: string;
   commandTimeoutMs: number;
@@ -39,6 +40,7 @@ export interface AppConfig {
 interface RawConfig {
   port?: number;
   host?: string;
+  basePath?: string;
   deviceName?: string;
   desktopTarget?: string;
   commandTimeoutMs?: number;
@@ -102,6 +104,7 @@ export function loadConfig(): AppConfig {
   return {
     port: Number(process.env.PORT ?? fileConfig.port ?? 3000),
     host: process.env.HOST ?? fileConfig.host ?? "0.0.0.0",
+    basePath: normalizeBasePath(process.env.SRC_BASE_PATH ?? fileConfig.basePath ?? "/"),
     deviceName: process.env.SRC_DEVICE_NAME ?? fileConfig.deviceName ?? "Gaming PC",
     desktopTarget:
       process.env.SRC_DESKTOP_TARGET ??
@@ -179,4 +182,11 @@ function normalizeDisplayCommand(
     statusArgs: command.statusArgs ?? ["--outputs"],
     statusFormat: command.statusFormat ?? "raw"
   };
+}
+
+function normalizeBasePath(value: string): string {
+  if (!/^\/(?:[A-Za-z0-9_-]+\/?)*$/.test(value)) {
+    throw new Error("basePath must be an absolute URL path with letters, digits, underscores, or hyphens.");
+  }
+  return value.endsWith("/") ? value : `${value}/`;
 }

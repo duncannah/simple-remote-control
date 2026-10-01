@@ -1,7 +1,7 @@
 import type { ActivityEvent, ApiMessage, ControlStatus } from "../shared/types";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(path.replace(/^\//, "./"), {
     ...init,
     headers: {
       "Content-Type": "application/json",

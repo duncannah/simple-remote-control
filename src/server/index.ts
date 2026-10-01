@@ -117,6 +117,20 @@ app.post("/api/boot/default", async (c) => {
   );
 });
 
+// Set the public URL base while the proxy strips it from incoming requests.
+app.use("*", async (c, next) => {
+  await next();
+  if (c.res.headers.get("Content-Type")?.includes("text/html")) {
+    const html = (await c.res.text()).replace(
+      "<head>",
+      `<head><base href="${config.basePath}">`
+    );
+    const headers = new Headers(c.res.headers);
+    headers.delete("Content-Length");
+    c.res = new Response(html, { status: c.res.status, headers });
+  }
+});
+
 app.use("*", serveStatic({ root: "./dist" }));
 app.get("*", async (c) => {
   const index = Bun.file("./dist/index.html");

@@ -117,3 +117,18 @@ An example systemd unit is available at `deploy/simple-remote-control.service`. 
 - `POST /api/boot/default` with `{ "bootId": "0001" }`
 
 Set `SRC_DRY_RUN=1` to verify UI flows without executing system commands.
+
+## Reverse proxy paths
+
+Set `basePath` in the JSON configuration or set `SRC_BASE_PATH` to `/remote-control/`.
+In NixOS, set `services.simple-remote-control.basePath = "/remote-control/";`.
+The default is `/`.
+The server uses this path in the HTML base tag for assets and API requests.
+The reverse proxy must remove the prefix before it forwards requests.
+
+```caddyfile
+redir /remote-control /remote-control/ 308
+handle_path /remote-control/* {
+  reverse_proxy 127.0.0.1:1337
+}
+```
